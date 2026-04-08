@@ -1,53 +1,246 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Mini CRM</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi CRM Sencillo</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    .card { padding: 10px; margin: 10px; border: 1px solid #ccc; display: inline-block; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f6f9; }
+    h1 { color: #2c3e50; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .tabs button { padding: 12px 20px; margin-right: 5px; border: none; background: #ddd; cursor: pointer; border-radius: 6px 6px 0 0; }
+    .tabs button.active { background: #3498db; color: white; }
+    .tab { display: none; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .tab.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #3498db; color: white; }
+    tr:hover { background: #f8f9fa; }
+    .form-container { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 25px; }
+    input, select, textarea, button { padding: 10px; margin: 6px 4px; border-radius: 4px; border: 1px solid #ccc; }
+    button { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: bold; }
+    button:hover { background: #219653; }
+    .success { color: green; font-weight: bold; }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h1>🚀 Mi CRM Sencillo B2B</h1>
+    <div class="tabs">
+      <button onclick="showTab(0)" class="active">Dashboard</button>
+      <button onclick="showTab(1)">Clientes</button>
+      <button onclick="showTab(2)">Proyectos</button>
+      <button onclick="showTab(3)">Actividades</button>
+    </div>
 
-<h1>📊 Dashboard</h1>
-<div id="dashboard"></div>
+    <!-- TAB 0: Dashboard -->
+    <div id="tab0" class="tab active">
+      <h2>Resumen</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:15px;">
+        <div style="background:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);text-align:center;">
+          <h2 id="totalClientes">0</h2><p>Clientes</p>
+        </div>
+        <div style="background:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);text-align:center;">
+          <h2 id="totalProyectos">0</h2><p>Proyectos</p>
+        </div>
+      </div>
+    </div>
 
-<h2>➕ Nuevo Cliente</h2>
-<input id="empresa" placeholder="Empresa"><br>
-<input id="contacto" placeholder="Contacto"><br>
-<input id="email" placeholder="Email"><br>
-<input id="telefono" placeholder="Teléfono"><br>
-<button onclick="addClient()">Guardar</button>
+    <!-- TAB 1: Clientes -->
+    <div id="tab1" class="tab">
+      <div class="form-container">
+        <h2>➕ Agregar Cliente</h2>
+        <input type="text" id="empresa" placeholder="Empresa" required>
+        <input type="text" id="contacto" placeholder="Nombre de contacto">
+        <input type="email" id="email" placeholder="Email">
+        <input type="tel" id="telefono" placeholder="Teléfono">
+        <button onclick="agregarCliente()">Guardar Cliente</button>
+      </div>
 
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzALg3rQJ_Yya-9mnaYqie4o40UfAyb-k97YywNsmLJnYND97XlhvMBHCBsQzz6r--X/exec";
+      <h2>Lista de Clientes</h2>
+      <table id="tablaClientes">
+        <thead><tr><th>ID</th><th>Empresa</th><th>Contacto</th><th>Email</th><th>Teléfono</th><th>Fecha Alta</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-async function loadDashboard() {
-  const res = await fetch(API_URL + "?action=getDashboard");
-  const data = await res.json();
+    <!-- TAB 2: Proyectos -->
+    <div id="tab2" class="tab">
+      <div class="form-container">
+        <h2>➕ Agregar Proyecto</h2>
+        <select id="clienteSelect" style="width:300px;"></select><br>
+        <input type="text" id="nombreProyecto" placeholder="Nombre del proyecto" required>
+        <select id="estadoProyecto">
+          <option value="Nuevo">Nuevo</option>
+          <option value="En Proceso">En Proceso</option>
+          <option value="En Pausa">En Pausa</option>
+          <option value="Finalizado">Finalizado</option>
+        </select>
+        <button onclick="agregarProyecto()">Guardar Proyecto</button>
+      </div>
 
-  let html = "";
-  for (let estado in data.estados) {
-    html += `<div class="card">${estado}: ${data.estados[estado]}</div>`;
-  }
+      <h2>Lista de Proyectos</h2>
+      <table id="tablaProyectos">
+        <thead><tr><th>ID</th><th>Cliente</th><th>Nombre</th><th>Estado</th><th>Fecha Inicio</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-  document.getElementById("dashboard").innerHTML = html;
-}
+    <!-- TAB 3: Actividades -->
+    <div id="tab3" class="tab">
+      <p>Selecciona un proyecto para ver/agregar actividades (se expandirá en el siguiente paso).</p>
+      <select id="proyectoSelect" style="width:300px;" onchange="cargarActividades()"></select>
+      <div id="actividadesContainer"></div>
+    </div>
+  </div>
 
-async function addClient() {
-  const empresa = document.getElementById("empresa").value;
-  const contacto = document.getElementById("contacto").value;
-  const email = document.getElementById("email").value;
-  const telefono = document.getElementById("telefono").value;
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxFP_VxRIG88MMXt1H-xXvOXvKuXGPzDA3hwP1ooLPAHDczza5iBzOSN8kRswS-Vyem/exec";
 
-  await fetch(API_URL + `?action=addClient&empresa=${empresa}&contacto=${contacto}&email=${email}&telefono=${telefono}`);
+    let clientes = [];
+    let proyectos = [];
 
-  alert("Cliente guardado");
-  loadDashboard();
-}
+    async function fetchAPI(params) {
+      const url = new URL(API_URL);
+      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Error en API");
+      return res.json();
+    }
 
-loadDashboard();
-</script>
+    async function postAPI(data) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      return res.json();
+    }
 
+    async function cargarDatos() {
+      try {
+        clientes = await fetchAPI({action: "getClients"});
+        proyectos = await fetchAPI({action: "getProjects"});
+
+        document.getElementById("totalClientes").textContent = clientes.length;
+        document.getElementById("totalProyectos").textContent = proyectos.length;
+
+        renderClientes();
+        renderProyectos();
+        llenarSelectClientes();
+        llenarSelectProyectos();
+      } catch (e) {
+        alert("Error al conectar con la base de datos. Verifica que el Apps Script esté desplegado correctamente.");
+        console.error(e);
+      }
+    }
+
+    function renderClientes() {
+      const tbody = document.querySelector("#tablaClientes tbody");
+      tbody.innerHTML = clientes.map(c => `
+        <tr>
+          <td>${c.id}</td>
+          <td>${c.empresa}</td>
+          <td>${c.contacto || ''}</td>
+          <td>${c.email || ''}</td>
+          <td>${c.telefono || ''}</td>
+          <td>${c.fechaAlta ? new Date(c.fechaAlta).toLocaleDateString() : ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderProyectos() {
+      const tbody = document.querySelector("#tablaProyectos tbody");
+      tbody.innerHTML = proyectos.map(p => {
+        const cliente = clientes.find(c => c.id === p.clienteId) || {empresa: 'Desconocido'};
+        return `
+          <tr>
+            <td>${p.id}</td>
+            <td>${cliente.empresa}</td>
+            <td>${p.nombre}</td>
+            <td>${p.estado}</td>
+            <td>${p.fechaInicio ? new Date(p.fechaInicio).toLocaleDateString() : ''}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function llenarSelectClientes() {
+      const select = document.getElementById("clienteSelect");
+      select.innerHTML = '<option value="">Selecciona cliente...</option>' +
+        clientes.map(c => `<option value="${c.id}">${c.empresa} (${c.contacto || ''})</option>`).join('');
+    }
+
+    function llenarSelectProyectos() {
+      const select = document.getElementById("proyectoSelect");
+      select.innerHTML = '<option value="">Selecciona proyecto...</option>' +
+        proyectos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+    }
+
+    async function agregarCliente() {
+      const empresa = document.getElementById("empresa").value.trim();
+      if (!empresa) return alert("La empresa es obligatoria");
+
+      const data = {
+        action: "addClient",
+        empresa: empresa,
+        contacto: document.getElementById("contacto").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        telefono: document.getElementById("telefono").value.trim()
+      };
+
+      const result = await postAPI(data);
+      if (result.success) {
+        alert("✅ Cliente guardado");
+        document.getElementById("empresa").value = "";
+        document.getElementById("contacto").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("telefono").value = "";
+        await cargarDatos();
+      } else {
+        alert("Error al guardar");
+      }
+    }
+
+    async function agregarProyecto() {
+      const clienteId = document.getElementById("clienteSelect").value;
+      const nombre = document.getElementById("nombreProyecto").value.trim();
+      if (!clienteId || !nombre) return alert("Selecciona cliente y escribe nombre del proyecto");
+
+      const data = {
+        action: "addProject",
+        clienteId: clienteId,
+        nombre: nombre,
+        estado: document.getElementById("estadoProyecto").value
+      };
+
+      const result = await postAPI(data);
+      if (result.success) {
+        alert("✅ Proyecto guardado");
+        document.getElementById("nombreProyecto").value = "";
+        await cargarDatos();
+      }
+    }
+
+    async function cargarActividades() {
+      const projectId = document.getElementById("proyectoSelect").value;
+      if (!projectId) return;
+      
+      // Placeholder por ahora (expandiremos en el siguiente paso)
+      document.getElementById("actividadesContainer").innerHTML = `
+        <p>Cargando actividades del proyecto...</p>
+        <p>Esta funcionalidad se completará en el siguiente paso (agregar nueva actividad + lista).</p>
+      `;
+    }
+
+    function showTab(n) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+      document.getElementById(`tab${n}`).classList.add('active');
+      document.querySelectorAll('.tabs button')[n].classList.add('active');
+    }
+
+    // Iniciar la aplicación
+    window.onload = cargarDatos;
+  </script>
 </body>
 </html>
