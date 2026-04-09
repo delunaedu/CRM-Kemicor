@@ -17,7 +17,6 @@
       --text2: #555d66;
       --text3: #9aa0a8;
       --accent: #0a7c4e;
-      --accent-dim2: rgba(10,124,78,0.05);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -79,6 +78,9 @@
     }
 
     .section { padding: 20px 16px; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     .card {
       background: var(--surface);
@@ -148,31 +150,17 @@
     tr td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
     tr td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
 
-    .pipeline {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;
-      padding: 10px 0;
-    }
+    .pipeline { display: flex; gap: 12px; overflow-x: auto; padding: 10px 0; }
     .stage {
-      min-width: 180px;
+      min-width: 170px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 16px;
       text-align: center;
     }
-    .stage h3 {
-      font-size: 13px;
-      color: var(--text2);
-      margin-bottom: 8px;
-      font-family: 'DM Mono', monospace;
-    }
-    .stage-count {
-      font-size: 28px;
-      font-weight: 600;
-      color: var(--accent);
-    }
+    .stage h3 { font-size: 13px; color: var(--text2); margin-bottom: 8px; font-family: 'DM Mono', monospace; }
+    .stage-count { font-size: 28px; font-weight: 600; color: var(--accent); }
 
     .empty { text-align: center; color: var(--text3); padding: 40px 20px; font-size: 14px; }
   </style>
@@ -194,8 +182,8 @@
 
   <div class="section">
 
-    <!-- Dashboard -->
-    <div id="tab0" class="tab-content">
+    <!-- TAB 0: Dashboard -->
+    <div id="tab0" class="tab-content active">
       <div class="card">
         <h2 style="margin-bottom:16px;">Resumen</h2>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
@@ -211,11 +199,59 @@
       </div>
     </div>
 
-    <!-- Clientes y Proyectos (mismo código anterior, abreviado por espacio) -->
-    <!-- ... (mantengo las pestañas 1 y 2 iguales a la versión anterior) ... -->
+    <!-- TAB 1: Clientes -->
+    <div id="tab1" class="tab-content">
+      <div class="card">
+        <h2 style="margin-bottom:16px;">Nuevo Cliente</h2>
+        <div class="form-grid">
+          <div><label>Empresa</label><input type="text" id="empresa" placeholder="Nombre de la empresa"></div>
+          <div><label>Contacto</label><input type="text" id="contacto" placeholder="Nombre del contacto"></div>
+          <div><label>Email</label><input type="email" id="email" placeholder="email@ejemplo.com"></div>
+          <div><label>Teléfono</label><input type="tel" id="telefono" placeholder="(55) 1234 5678"></div>
+        </div>
+        <button onclick="agregarCliente()">Guardar Cliente</button>
+      </div>
+
+      <div class="card">
+        <h2>Lista de Clientes</h2>
+        <table id="tablaClientes">
+          <thead><tr><th>ID</th><th>Empresa</th><th>Contacto</th><th>Email</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: Proyectos -->
+    <div id="tab2" class="tab-content">
+      <div class="card">
+        <h2 style="margin-bottom:16px;">Nuevo Proyecto</h2>
+        <div class="form-grid">
+          <div><label>Cliente</label><select id="clienteSelect"></select></div>
+          <div><label>Nombre del Proyecto</label><input type="text" id="nombreProyecto" placeholder="Ej. Implementación Sistema"></div>
+          <div><label>Estado</label>
+            <select id="estadoProyecto">
+              <option value="Definición">Definición</option>
+              <option value="Prueba Piloto">Prueba Piloto</option>
+              <option value="Prueba Industrial">Prueba Industrial</option>
+              <option value="Negociación">Negociación</option>
+              <option value="Cierre">Cierre</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="agregarProyecto()">Guardar Proyecto</button>
+      </div>
+
+      <div class="card">
+        <h2>Proyectos</h2>
+        <table id="tablaProyectos">
+          <thead><tr><th>ID</th><th>Cliente</th><th>Proyecto</th><th>Estado</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
 
     <!-- TAB 3: Pipeline -->
-    <div id="tab3" class="tab-content" style="display:none;">
+    <div id="tab3" class="tab-content">
       <div class="card">
         <h2>Embudo de Ventas</h2>
         <div id="pipelineContainer" class="pipeline"></div>
@@ -223,16 +259,12 @@
     </div>
 
     <!-- TAB 4: Actividades -->
-    <div id="tab4" class="tab-content" style="display:none;">
+    <div id="tab4" class="tab-content">
       <div class="card">
-        <h2 style="margin-bottom:16px;">Nueva Actividad</h2>
+        <h2>Nueva Actividad</h2>
         <div class="form-grid">
-          <div>
-            <label>Proyecto</label>
-            <select id="proyectoActividad"></select>
-          </div>
-          <div>
-            <label>Tipo de Actividad</label>
+          <div><label>Proyecto</label><select id="proyectoActividad"></select></div>
+          <div><label>Tipo</label>
             <select id="tipoActividad">
               <option value="Llamada">Llamada</option>
               <option value="Reunión">Reunión</option>
@@ -241,18 +273,15 @@
               <option value="Otro">Otro</option>
             </select>
           </div>
-          <div>
-            <label>Comentario</label>
-            <textarea id="comentarioAct" rows="3" placeholder="Detalles de la actividad..."></textarea>
-          </div>
+          <div><label>Comentario</label><textarea id="comentarioAct" rows="3" placeholder="Detalles..."></textarea></div>
         </div>
         <button onclick="agregarActividad()">Guardar Actividad</button>
       </div>
 
       <div class="card">
-        <h2>Actividades del Proyecto</h2>
-        <select id="proyectoSelect" onchange="cargarActividades()" style="margin-bottom:12px;"></select>
-        <div id="actividadesContainer"></div>
+        <h2>Actividades</h2>
+        <select id="proyectoSelect" onchange="cargarActividades()" style="margin-bottom:12px; width:100%;"></select>
+        <div id="actividadesContainer" class="empty">Selecciona un proyecto</div>
       </div>
     </div>
 
@@ -261,11 +290,20 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxFP_VxRIG88MMXt1H-xXvOXvKuXGPzDA3hwP1ooLPAHDczza5iBzOSN8kRswS-Vyem/exec";
 
-    let clientes = [], proyectos = [];
+    let clientes = [];
+    let proyectos = [];
 
-    // Funciones fetch y post (igual que antes)
-    async function fetchAPI(params) { /* ... mismo código ... */ }
-    async function postAPI(data) { /* ... mismo código ... */ }
+    async function fetchAPI(params) {
+      const url = new URL(API_URL);
+      Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+      const res = await fetch(url);
+      return res.json();
+    }
+
+    async function postAPI(data) {
+      const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(data) });
+      return res.json();
+    }
 
     async function cargarDatos() {
       try {
@@ -275,14 +313,54 @@
         document.getElementById("totalClientes").textContent = clientes.length;
         document.getElementById("totalProyectos").textContent = proyectos.length;
 
-        renderClientes(); // mantén tus funciones anteriores
+        renderClientes();
         renderProyectos();
         llenarSelects();
         renderPipeline();
-      } catch(e) { console.error(e); alert("Error de conexión"); }
+      } catch (e) {
+        console.error(e);
+        alert("Error al conectar con la API. Revisa la consola (F12) y asegúrate de que el Apps Script esté desplegado como 'Anyone'.");
+      }
     }
 
-    // Render Pipeline
+    function renderClientes() {
+      const tbody = document.querySelector("#tablaClientes tbody");
+      tbody.innerHTML = clientes.map(c => `
+        <tr>
+          <td>${c.id}</td>
+          <td>${c.empresa}</td>
+          <td>${c.contacto || '-'}</td>
+          <td>${c.email || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderProyectos() {
+      const tbody = document.querySelector("#tablaProyectos tbody");
+      tbody.innerHTML = proyectos.map(p => {
+        const cliente = clientes.find(c => c.id === p.clienteId) || {empresa: '—'};
+        return `
+          <tr>
+            <td>${p.id}</td>
+            <td>${cliente.empresa}</td>
+            <td>${p.nombre}</td>
+            <td>${p.estado}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function llenarSelects() {
+      let htmlC = '<option value="">Selecciona cliente...</option>';
+      clientes.forEach(c => htmlC += `<option value="${c.id}">${c.empresa}</option>`);
+      document.getElementById("clienteSelect").innerHTML = htmlC;
+      document.getElementById("proyectoActividad").innerHTML = htmlC.replace('cliente', 'proyecto');
+
+      let htmlP = '<option value="">Selecciona proyecto...</option>';
+      proyectos.forEach(p => htmlP += `<option value="${p.id}">${p.nombre}</option>`);
+      document.getElementById("proyectoSelect").innerHTML = htmlP;
+    }
+
     async function renderPipeline() {
       const data = await fetchAPI({action: "getPipeline"});
       const container = document.getElementById("pipelineContainer");
@@ -294,15 +372,51 @@
       `).join('');
     }
 
-    // Actividades
+    async function agregarCliente() {
+      const empresa = document.getElementById("empresa").value.trim();
+      if (!empresa) return alert("Empresa es obligatoria");
+      const data = {
+        action: "addClient",
+        empresa: empresa,
+        contacto: document.getElementById("contacto").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        telefono: document.getElementById("telefono").value.trim()
+      };
+      const res = await postAPI(data);
+      if (res.success) {
+        alert("✅ Cliente guardado");
+        document.getElementById("empresa").value = "";
+        document.getElementById("contacto").value = "";
+        document.getElementById("email").value = "";
+        document.getElementById("telefono").value = "";
+        await cargarDatos();
+      }
+    }
+
+    async function agregarProyecto() {
+      const clienteId = document.getElementById("clienteSelect").value;
+      const nombre = document.getElementById("nombreProyecto").value.trim();
+      if (!clienteId || !nombre) return alert("Selecciona cliente y nombre del proyecto");
+      const data = {
+        action: "addProject",
+        clienteId: clienteId,
+        nombre: nombre,
+        estado: document.getElementById("estadoProyecto").value
+      };
+      const res = await postAPI(data);
+      if (res.success) {
+        alert("✅ Proyecto guardado");
+        document.getElementById("nombreProyecto").value = "";
+        await cargarDatos();
+      }
+    }
+
     async function agregarActividad() {
       const proyectoId = document.getElementById("proyectoActividad").value;
       const tipo = document.getElementById("tipoActividad").value;
       const comentario = document.getElementById("comentarioAct").value.trim();
-
-      if (!proyectoId || !comentario) return alert("Selecciona proyecto y escribe comentario");
-
-      const res = await postAPI({ action: "addActivity", proyectoId, tipo, comentario });
+      if (!proyectoId || !comentario) return alert("Proyecto y comentario son obligatorios");
+      const res = await postAPI({action: "addActivity", proyectoId, tipo, comentario});
       if (res.success) {
         alert("✅ Actividad guardada");
         document.getElementById("comentarioAct").value = "";
@@ -313,28 +427,27 @@
     async function cargarActividades() {
       const projectId = document.getElementById("proyectoSelect").value;
       if (!projectId) return;
-      const acts = await fetchAPI({action: "getActivitiesByProject", projectId});
-      // Render lista de actividades (puedes mejorarla después)
+      const acts = await fetchAPI({action: "getActivitiesByProject", projectId: projectId});
       let html = acts.length ? acts.map(a => `
         <div style="background:var(--surface2); padding:14px; border-radius:10px; margin-bottom:10px;">
-          <small>${new Date(a.fecha).toLocaleDateString()} - ${a.tipo}</small>
+          <small>${new Date(a.fecha).toLocaleDateString()} — ${a.tipo}</small>
           <p>${a.comentario}</p>
         </div>
       `).join('') : '<p class="empty">Sin actividades aún</p>';
       document.getElementById("actividadesContainer").innerHTML = html;
     }
 
-    function llenarSelects() { /* actualiza los selects de cliente y proyecto */ }
-
     function showTab(n) {
-      document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-      document.getElementById(`tab${n}`).style.display = 'block';
-      document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.getElementById(`tab${n}`).classList.add('active');
+      document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tabs button')[n].classList.add('active');
+
       if (n === 3) renderPipeline();
       if (n === 4) cargarActividades();
     }
 
+    // Iniciar
     window.onload = cargarDatos;
   </script>
 </body>
